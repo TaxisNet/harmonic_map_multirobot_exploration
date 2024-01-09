@@ -1,0 +1,12 @@
+uint32[] xl
+uint32[] yl
+uint32[] boundary_index
+bool[] isfree
+uint32 pos_x
+uint32 pos_y
+uint32 map_x0
+uint32 map_y0
+uint32 map_width
+uint32 map_height
+float32 map_resolution
+bool comp_failed
