@@ -406,7 +406,7 @@ if __name__=='__main__':
 
     rospy.init_node('boundary_comp_node', anonymous=True)
     
-    computation = Computation('tb3_0')
+    computation = Computation()
     rate = rospy.Rate(0.2)
     
     while not rospy.is_shutdown():

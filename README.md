@@ -17,19 +17,19 @@ Run the following commands in diffrent terminals.
 
 This launches the gazebo simulation
 ~~~
-$ export TURTLEBOT3_MODEL=burger 
-$ roslaunch turtlebot3_gazebo turtlebot3_world.launch 
+ export TURTLEBOT3_MODEL=burger 
+ roslaunch harmonic_map_multirobot_exploration turtlebot3_maze.launch 
 ~~~
 
 This launches the gmapping.
 ~~~
-$ export TURTLEBOT3_MODEL=burger
-$ roslaunch turtlebot3_slam turtlebot3_slam.launch slam_methods method:=gmapping
+ export TURTLEBOT3_MODEL=burger
+ roslaunch turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
 ~~~
 
 This launches a python script that extracts the boundary points from the Occupancy Grid Map.
 ~~~
-$ rosrun harmonic_map_multirobot_exploration boundary_extraction.py
+ rosrun harmonic_map_multirobot_exploration boundary_extraction.py
 ~~~
 
 finally run the matlab script `single_controller.m` , located in the `src` folder. This script launches a new node, calculates the harmonic map transform and commands the robot to move.
@@ -43,13 +43,13 @@ Run the following commands in diffrent terminals.
 
 This launches the gazebo simulation, gmapping and map merging for all robots.
 ~~~
-$ export TURTLEBOT3_MODEL=burger 
-$ roslaunch harmonic_map_multirobot_exploration multi_slam_and_map_merging.launch
+ export TURTLEBOT3_MODEL=burger 
+ roslaunch harmonic_map_multirobot_exploration multi_slam_and_map_merging.launch
 ~~~
 
 This launches a python script that extracts the boundary points from the Occupancy Grid Map for all robots.
 ~~~
-$ rosrun harmonic_map_multirobot_exploration  multi_boundary_extraction.py
+ rosrun harmonic_map_multirobot_exploration  multi_boundary_extraction.py
 ~~~
 
 finally run the matlab script `multi_controller.m` , located in the `src`  folder. This script launches a new node, calculates the harmonic map transform and commands the robot to move.
