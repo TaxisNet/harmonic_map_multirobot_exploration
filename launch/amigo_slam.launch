@@ -1,0 +1,38 @@
+<launch>
+	<arg name="namespace" default=""/>
+	<arg name="amigo_port" default="0"/>
+	<arg name="libar_port" default="1"/>
+
+    <param name="use_sim_time" value="false"/>
+
+    <group ns="$(arg namespace)">
+		<node name="Aria" pkg="rosaria" type="RosAria" output="screen">
+			<param name="port" value="/dev/ttyUSB$(arg amigo_port)" />
+		</node>
+
+        <include file="$(find amigobot)/launch/publish_tfs.launch" />
+
+        <include file="$(find rplidar_ros)/launch/rplidar_a1.launch" >
+            <param name="serial_port" value="/dev/ttyUSB$(arg libar_port)"/>
+        </include>
+
+        <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+            <remap from="scan" to="/RosAria/scan"/>
+            <param name="odom_frame" value="odom"/>
+            <param name="maxUrange" value="2."/>
+            <param name="maxRange" value="2.1"/>
+            <param name="linearUpdate" value="0.1"/>
+            <param name="angularUpdate" value="0.01"/>
+            <param name="temporalUpdate" value="-1"/> 
+            <param name="particles" value="200"/>  
+            <param name="minimumScore" value="300."/>
+            <param name="delta" value="0.05" />
+            <param name="map_update_interval" value="1." />
+            <param name="srr" value="0.1" />
+            <param name="srt" value="0.2" />
+            <param name="str" value="0.1" />
+            <param name="stt" value="0.2" />
+        </node>
+    </group>
+
+</launch>

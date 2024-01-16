@@ -207,7 +207,8 @@ function [linVel, angVel] = velocityController(quat, desired_vel)
 
     %linVel = K_lin*norm(desired_vel);
 
-    turningCoef = max((1-((delta_yaw)/(pi/2)).^4),0);
+    %turningCoef = max((1-((delta_yaw)/(pi/2)).^4),0);
+    turningCoef = abs(delta_yaw)<(pi/6)
     linVel = K_lin* turningCoef*norm(desired_vel);
 end
 
