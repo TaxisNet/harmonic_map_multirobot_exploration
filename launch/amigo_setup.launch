@@ -1,0 +1,52 @@
+<launch>
+	<arg name="robot_name" default="amigo_1"/>
+	<arg name ="robot_port" default="1"/>
+	<arg name="lidar_port" default="0"/>
+	<group ns="$(arg robot_name)">
+	
+		<!--rplidar-->
+		<node name="rplidarNode"          pkg="rplidar_ros"  type="rplidarNode" output="screen">
+			<param name="serial_port"         type="string" value="/dev/ttyUSB$(arg lidar_port)"/>
+			<param name="serial_baudrate"     type="int"    value="115200"/>
+			<param name="frame_id"            type="string" value="$(arg robot_name)_tf/top_plate"/>
+			<param name="inverted"            type="bool"   value="false"/>
+			<param name="angle_compensate"    type="bool"   value="true"/>
+
+			<remap from="/RosAria/scan" to="/$(arg robot_name)/scan"/>
+		</node>
+
+		<!-- communication with robot -->
+		<node name="rosAria" pkg="rosaria" type="RosAria" output="screen">
+			<param name="port" type="string" value="/dev/ttyUSB$(arg robot_port)" />
+			<param name="odom_frame" value="$(arg robot_name)_tf/odom" />
+			<param name="base_link_frame" value="$(arg robot_name)_tf/base_link" />
+
+
+			<remap from="rosAria/cmd_vel" to="/$(arg robot_name)/cmd_vel"/>
+			<remap from="rosAria/battery_recharge_state" to="/$(arg robot_name)/battery_recharge_state"/>
+			<remap from="rosAria/battery_state_of_charge" to="/$(arg robot_name)/battery_state_of_charge"/>
+			<remap from="rosAria/battery_voltage" to="/$(arg robot_name)/battery_voltage"/>
+			<remap from="rosAria/bumper_state" to="/$(arg robot_name)/bumper_state"/>
+			<remap from="rosAria/motors_state" to="/$(arg robot_name)/motors_state"/>
+			<remap from="rosAria/parameter_descriptions" to="/$(arg robot_name)/parameter_descriptions"/>
+			<remap from="rosAria/parameter_updates" to="/$(arg robot_name)/parameter_updates"/>
+			<remap from="rosAria/pose" to="/$(arg robot_name)/pose"/>
+			<remap from="rosAria/sonar" to="/$(arg robot_name)/sonar"/>
+			<remap from="rosAria/sonar_pointcloud2" to="/$(arg robot_name)/sonar_pointcloud2"/>
+		</node>
+
+
+		<!-- publish tf messages for the robot -->
+		<arg name="model" default="$(find amigobot)/urdf/amigobot.urdf.xacro" />
+		<param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+		
+
+	
+		<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+		<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+      <param name="tf_prefix" value="$(arg robot_name)_tf" />
+    </node>
+
+	</group>
+
+</launch>
