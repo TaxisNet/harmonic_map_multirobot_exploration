@@ -281,7 +281,7 @@ class Computation():
         #pub map image
         #used for debug only!
         self.image_msg =  self.br.cv2_to_imgmsg(bbcopy,"bgr8")
-        #self.image_pub.publish(self.image_msg)
+        self.image_pub.publish(self.image_msg)
         
         # # plots for debugging
         # plt.subplot(231,title="freeBound")
@@ -402,11 +402,27 @@ class Computation():
             
 
 
+# if __name__=='__main__':
+
+#     rospy.init_node('boundary_comp_node', anonymous=True)
+    
+#     computation = Computation()
+#     rate = rospy.Rate(0.2)
+    
+#     while not rospy.is_shutdown():
+#         #about 0.3 to 0.7 secs
+#         computation.publish_data()
+        
+#         rate.sleep()
+
+
 if __name__=='__main__':
 
     rospy.init_node('boundary_comp_node', anonymous=True)
     
-    computation = Computation()
+    computation = Computation('amigo_1')
+    computation.robot_radius=(0.33/2)
+    computation.tf_robot_frame = computation.namespace +'/base_link'
     rate = rospy.Rate(0.2)
     
     while not rospy.is_shutdown():

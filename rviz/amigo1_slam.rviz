@@ -4,10 +4,8 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
         - /TF1/Tree1
-        - /Axes1
-      Splitter Ratio: 0.5399060845375061
+      Splitter Ratio: 0.56207674741745
     Tree Height: 539
   - Class: rviz/Selection
     Name: Selection
@@ -58,7 +56,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: Map
-      Topic: /amigo_2/map
+      Topic: /amigo_1/map
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -85,7 +83,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.019999999552965164
       Style: Flat Squares
-      Topic: /amigo_2/scan
+      Topic: /amigo_1/scan
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -113,14 +111,14 @@ Visualization Manager:
       Length: 0.10000000149011612
       Name: Axes
       Radius: 0.05000000074505806
-      Reference Frame: amigo_2/base_link
+      Reference Frame: amigo_1/base_link
       Show Trail: false
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: amigo_2/map
+    Fixed Frame: amigo_1/map
     Frame Rate: 30
   Name: root
   Tools:
@@ -144,7 +142,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 3.42510986328125
+      Distance: 7.229799747467041
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -152,8 +150,8 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.6812627911567688
-        Y: -0.883543074131012
+        X: 0.6914156079292297
+        Y: -2.5619940757751465
         Z: 2.6226043701171875e-06
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
