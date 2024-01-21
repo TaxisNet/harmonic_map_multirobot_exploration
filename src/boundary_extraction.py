@@ -420,7 +420,7 @@ if __name__=='__main__':
 
     rospy.init_node('boundary_comp_node', anonymous=True)
     
-    computation = Computation('amigo_1')
+    computation = Computation('amigo_3')
     computation.robot_radius=(0.33/2)
     computation.tf_robot_frame = computation.namespace +'/base_link'
     rate = rospy.Rate(0.2)

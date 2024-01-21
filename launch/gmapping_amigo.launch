@@ -26,15 +26,15 @@
       <param name="str" value="0.1" />
       <param name="stt" value="0.2" />
 
-      <param name="xmax" value="5" />
-      <param name="xmin" value="-5" />
-      <param name="ymax" value="5" />
-      <param name="ymin" value="-5" />
+      <param name="xmax" value="20" />
+      <param name="xmin" value="-20" />
+      <param name="ymax" value="20" />
+      <param name="ymin" value="-20" />
     </node>
   </group>
 
   <group if="$(arg open_rviz)"> 
-    <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find harmonic_map_multirobot_exploration)/rviz/amigo_slam.rviz"/>
+    <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find harmonic_map_multirobot_exploration)/rviz/$(arg namespace)_slam.rviz"/>
   </group>
 
 </launch>

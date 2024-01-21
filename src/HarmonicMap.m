@@ -475,7 +475,7 @@ classdef HarmonicMap < handle
                 v = dx/(norm(dx)+0.001);
         end
         
-        function nearestFront_q = getNearestFrontier(obj, pos)
+        function nearestFront_q = getNearestFrontier(obj, pos, viz)
             sz = size(pos);
             if (sz(2)~=2) 
                 pos = pos';
@@ -491,6 +491,18 @@ classdef HarmonicMap < handle
             temp_dist = sqrt(sum((obj.frontiers_q-nearest_q).^2,2));
             [~,indx] = min(temp_dist);
             nearestFront_q = obj.frontiers_q(indx,:)';
+
+            if(nargin==3 && viz)
+                obj.fig;
+                subplot(121)
+                hold on
+                plot(nearestFront(1), nearestFront(2), 'bx','MarkerSize',10)
+                hold off
+                subplot(122)
+                hold on
+                plot(nearestFront_q(1), nearestFront_q(2), 'bx','MarkerSize',10)
+                hold off
+            end
     
         end
         

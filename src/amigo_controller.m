@@ -19,7 +19,7 @@ K_lin = 0.08;
 % node = ros.Node('/matlab_node');
 % sub = ros.Subscriber(node,'boundary_info','boundary_compute/boundary_info', @callback , DataFormat='struct');
 % velocity_pub = ros.Publisher(node, '/cmd_vel','geometry_msgs/Twist');
-namespace='/amigo_1';
+namespace='/amigo_3';
 boundary_info_sub = rossubscriber(strcat(namespace,'/boundary_info'),'boundary_compute/boundary_info', @callback , DataFormat='struct');
 velocity_pub = rospublisher(strcat(namespace,'/cmd_vel'),'geometry_msgs/Twist', DataFormat='struct');
 
@@ -41,6 +41,7 @@ while(1)
         subplot(121)
         hold on
         plot(robotPos(1), robotPos(2), 'rsquare')
+        hold off
         %%%%
 
 
@@ -89,11 +90,12 @@ function callback(~,msg)
        
         if(isempty(hm.frontiers_q))
             disp("Exporation Done!")
+            rosshutdown
             return
         end
 
         try
-            q_front = hm.getNearestFrontier(robotPos);
+            q_front = hm.getNearestFrontier(robotPos,true);
         catch
             disp("Error finding nearest frontier")
             q_front = hm.frontiers_q(1,:)';
