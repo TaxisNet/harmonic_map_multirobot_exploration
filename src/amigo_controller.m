@@ -12,17 +12,18 @@ rosinit
 % globals
 global hm K_ang K_lin q_front robotPos
 hm = HarmonicMap();
-K_ang = 0.5;
+hm.fig = figure(1);
+K_ang = 0.25;
 K_lin = 0.08;
 
 %ROS
 % node = ros.Node('/matlab_node');
 % sub = ros.Subscriber(node,'boundary_info','boundary_compute/boundary_info', @callback , DataFormat='struct');
 % velocity_pub = ros.Publisher(node, '/cmd_vel','geometry_msgs/Twist');
-namespace='/amigo_3';
+namespace='/amigo_2';
 boundary_info_sub = rossubscriber(strcat(namespace,'/boundary_info'),'boundary_compute/boundary_info', @callback , DataFormat='struct');
 velocity_pub = rospublisher(strcat(namespace,'/cmd_vel'),'geometry_msgs/Twist', DataFormat='struct');
-
+    
 
 tftree = rostf("DataFormat","struct");
 
@@ -31,6 +32,9 @@ while(1)
     twistMsg = rosmessage(velocity_pub);
     if(~isempty(hm.frontiers_q))
         robotPosMsg = getTransform(tftree, strcat( namespace, '/map'), strcat( namespace, '/base_link'));
+        if(isempty(robotPosMsg))
+            continue
+        end
         robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
         robotQuat = robotPosMsg.Transform.Rotation;
         robotQuat = [robotQuat.W robotQuat.X robotQuat.Y robotQuat.Z];
@@ -87,9 +91,17 @@ function callback(~,msg)
         hm.setBoundaries(boundaries,isFree);
         toc
         hm.plotMap
-       
+        
+        %-------save HM fig ---------
+        fig_name = strcat('hm_fig_',string(datetime('now',Format='dd-MM-yy_HHmmss')));
+        saveas(hm.fig,strcat('/media/taxis/Intenso/Results/figures/',fig_name), 'epsc')
+        %----------------------------
+
+
+
         if(isempty(hm.frontiers_q))
             disp("Exporation Done!")
+            save(fig_name)
             rosshutdown
             return
         end

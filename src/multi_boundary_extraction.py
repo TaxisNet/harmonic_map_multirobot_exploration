@@ -124,20 +124,20 @@ class MergingComputation(Computation):
         # GET OTHER ROBOT POSITION AND CHECK IF MERGED
         for robot_ns in self.other_robots_ns:
             try:
-                (trans,rot) =  self.listener.lookupTransform(self.tf_merged_map_frame, robot_ns+'/base_footprint', rospy.Time(0))
+                (trans,rot) =  self.listener.lookupTransform(self.tf_merged_map_frame, robot_ns+self.tf_base_frame, rospy.Time(0))
                 #pos in image pixels
                 robot_pos = np.double([trans[0]/self.mapResolution,trans[1]/self.mapResolution]) + np.double(self.mapOrigin)/self.mapResolution
                 robot_pos = np.round(robot_pos).astype(int)
                 #do not remove because it cv2 pointPolygonTest produces an error.
                 robot_pos = (int(robot_pos[0]), int(robot_pos[1]))
                 if(cv2.pointPolygonTest(contours[outer_bound_indx], robot_pos, measureDist=False) >= 0):
-                    print("Merged {}!".format(self.namespace))
                     self.updateToMerged()
                     break
             except:
                 print("Error getting pos of {}!".format(robot_ns))
         
     def updateToMerged(self):
+        print("Merged {}!".format(self.namespace))
         self.map_sub.unregister()
         self.merged_map_sub.unregister()
 

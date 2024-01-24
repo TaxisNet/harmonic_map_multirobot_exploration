@@ -1,0 +1,28 @@
+<launch>
+  <arg name="open_rviz" default="true"/>
+  <arg name="ns_1"  default="amigo_1"/>
+  <arg name="ns_2" default="amigo_2"/>
+
+
+  <include file="$(find harmonic_map_multirobot_exploration)/launch/gmapping_amigo.launch">
+    <arg name="namespace" value="$(arg ns_1)"/>
+    <arg name="open_rviz" value="false"/>
+    <arg name="open_boundary_extraction" value="false"/>
+  </include>
+
+  <node pkg="harmonic_map_multirobot_exploration" type="amigo_multi_boundary_extraction.py" name="be_1_node" ns="$(arg ns_1)" output="screen" />
+
+  <include file="$(find harmonic_map_multirobot_exploration)/launch/gmapping_amigo.launch">
+    <arg name="namespace" value="$(arg ns_2)"/>
+    <arg name="open_rviz" value="false"/>
+    <arg name="open_boundary_extraction" value="false"/>
+  </include>
+
+  <node pkg="harmonic_map_multirobot_exploration" type="amigo_multi_boundary_extraction.py" name="be_2_node" ns="$(arg ns_2)" output="screen" />
+  <!-- open map merging-->
+
+  <group if="$(arg open_rviz)"> 
+    <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find harmonic_map_multirobot_exploration)/rviz/multi_amigo_slam.rviz"/>
+  </group>
+
+</launch>

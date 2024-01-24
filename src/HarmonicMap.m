@@ -544,7 +544,7 @@ classdef HarmonicMap < handle
 
                if(~isempty(obj.isFree))
                    plot(obj.boundaries{i}(obj.isFree{i},1),obj.boundaries{i}(obj.isFree{i},2),...
-                       '.g', 'MarkerSize',15)
+                       '.g', 'MarkerSize',10)
                end
             end
 

@@ -24,7 +24,8 @@ class Computation():
         # define ros namespace
         self.namespace =  ns
         self.tf_map_frame = self.namespace +'/map'
-        self.tf_robot_frame = self.namespace +'/base_footprint'
+        self.tf_base_frame = '/base_footprint'
+        self.tf_robot_frame = self.namespace +self.tf_base_frame 
         self.map_topic = self.namespace +'/map'
 
         #TF LISTENER
@@ -403,10 +404,9 @@ class Computation():
 
 
 # if __name__=='__main__':
-
 #     rospy.init_node('boundary_comp_node', anonymous=True)
-    
-#     computation = Computation()
+#     ns = rospy.get_namespace()[:-1]
+#     computation = Computation(ns)
 #     rate = rospy.Rate(0.2)
     
 #     while not rospy.is_shutdown():
@@ -417,16 +417,15 @@ class Computation():
 
 
 if __name__=='__main__':
-
     rospy.init_node('boundary_comp_node', anonymous=True)
-    
-    computation = Computation('amigo_3')
+
+    ns = rospy.get_namespace()[:-1]
+    computation = Computation(ns)
     computation.robot_radius=(0.33/2)
     computation.tf_robot_frame = computation.namespace +'/base_link'
     rate = rospy.Rate(0.2)
     
     while not rospy.is_shutdown():
-        #about 0.3 to 0.7 secs
         computation.publish_data()
         
         rate.sleep()
