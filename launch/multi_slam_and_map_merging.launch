@@ -45,7 +45,7 @@
 
 
   
-  <!-- <include file="$(find harmonic_map_multirobot_exploration)/launch/multi_map_merge.launch"/> -->
+   <include file="$(find harmonic_map_multirobot_exploration)/launch/multi_map_merge.launch"/> -->
   <!-- Correct map origin-->
   <node pkg="harmonic_map_multirobot_exploration" type="move_map_origin.py" name="move_map_origin" output="screen"/>
 
