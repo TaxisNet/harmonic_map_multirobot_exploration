@@ -13,8 +13,8 @@ class Transformer():
     def callback(self, msg):
         
         p = Pose()
-        p.position.x = -5
-        p.position.y = -5
+        p.position.x = -10
+        p.position.y = -10
         msg.info.origin = p
         self.newMap = msg
         self.pub.publish(self.newMap)

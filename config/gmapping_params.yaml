@@ -20,10 +20,10 @@ srt: 0.02
 str: 0.01
 stt: 0.02
 resampleThreshold: 0.5
-xmin: -5.0
-ymin: -5.0
-xmax: 15.0
-ymax: 15.0
+xmin: -10.0
+ymin: -10.0
+xmax: 10.0
+ymax: 10.0
 llsamplerange: 0.01
 llsamplestep: 0.01
 lasamplerange: 0.005

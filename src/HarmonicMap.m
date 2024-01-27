@@ -35,7 +35,7 @@ classdef HarmonicMap < handle
         % Controls samples per unit. Outter has more that inner by 
         % innerObstacleSampleModifier
         % this might need tuning
-        samplesPerUnit = 60;
+        samplesPerUnit = 100;
         innerObstacleSampleModifier = 0.25;
         
         
@@ -542,7 +542,7 @@ classdef HarmonicMap < handle
                plot(obj.boundaries{i}(:,1),obj.boundaries{i}(:,2),...
                    'k-','Linewidth',2)
 
-               if(~isempty(obj.isFree))
+               if(~isempty(obj.isFree) && i==1)
                    plot(obj.boundaries{i}(obj.isFree{i},1),obj.boundaries{i}(obj.isFree{i},2),...
                        '.g', 'MarkerSize',10)
                end

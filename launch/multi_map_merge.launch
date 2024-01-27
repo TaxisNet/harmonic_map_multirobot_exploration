@@ -3,13 +3,13 @@
   <arg name="second_tb3" default="tb3_1"/>
 
 
-  <arg name="first_tb3_x_pos" default="0.5"/>
+  <arg name="first_tb3_x_pos" default="1.75"/>
   <arg name="first_tb3_y_pos" default="0.5"/>
   <arg name="first_tb3_z_pos" default="0.0"/>
   <arg name="first_tb3_yaw"   default="0.0"/>
   
-  <arg name="second_tb3_x_pos" default="1.8"/>
-  <arg name="second_tb3_y_pos" default="3.2"/>
+  <arg name="second_tb3_x_pos" default="2.5"/>
+  <arg name="second_tb3_y_pos" default="2.5"/>
   <arg name="second_tb3_z_pos" default="0.0"/>
   <arg name="second_tb3_yaw"   default="0.0"/>
 
@@ -54,11 +54,11 @@
       <param name="robot_namespace" value="tb3"/>
       <param name="merged_map_topic" value="map"/>
       <param name="world_frame" value="world"/>
-      <param name="known_init_poses" value="true"/>
+      <param name="known_init_poses" value="false"/>
       <param name="merging_rate" value="1.5"/>
       <param name="discovery_rate" value="0.05"/>
       <param name="estimation_rate" value="0.5"/>
-      <param name="estimation_confidence" value="1.0"/>
+      <param name="estimation_confidence" value="0.75"/>
     </node>
   </group>
   
@@ -66,6 +66,7 @@
  
   <node pkg="tf" type="static_transform_publisher" name="world_to_$(arg first_tb3)_tf_broadcaster"  args="0 0 0 0 0 0 /world /$(arg first_tb3)/map 100"/>
   <node pkg="tf" type="static_transform_publisher" name="world_to_$(arg second_tb3)_tf_broadcaster" args="0 0 0 0 0 0 /world /$(arg second_tb3)/map 100"/>
+ 
   <!--
   <node pkg="tf" type="static_transform_publisher" name="world_to_$(arg third_tb3)_tf_broadcaster" args="0 0 0 0 0 0 /map /$(arg third_tb3)/map 100"/>
   -->

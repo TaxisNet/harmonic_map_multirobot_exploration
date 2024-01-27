@@ -3,6 +3,20 @@
   <arg name="ns_1"  default="amigo_1"/>
   <arg name="ns_2" default="amigo_2"/>
 
+  <group ns="$(arg ns_1)/map_merge">
+    <param name="init_pose_x"   value="0.66"/>
+    <param name="init_pose_y"   value="1.66"/>
+    <param name="init_pose_z"   value="0.0"/>
+    <param name="init_pose_yaw" value="3.14"/>
+  </group>
+
+  <group ns="$(arg ns_2)/map_merge">
+    <param name="init_pose_x"   value="3.0"/>
+    <param name="init_pose_y"   value="0.66"/>
+    <param name="init_pose_z"   value="0.0"/>
+    <param name="init_pose_yaw" value="3.14"/>
+  </group>
+
 
   <include file="$(find harmonic_map_multirobot_exploration)/launch/gmapping_amigo.launch">
     <arg name="namespace" value="$(arg ns_1)"/>
@@ -19,10 +33,34 @@
   </include>
 
   <node pkg="harmonic_map_multirobot_exploration" type="amigo_multi_boundary_extraction.py" name="be_2_node" ns="$(arg ns_2)" output="screen" />
+  
+  
   <!-- open map merging-->
+  <group ns="map_merge">
+    <node pkg="multirobot_map_merge" type="map_merge" respawn="false" name="map_merge" output="screen">
+      <param name="robot_map_topic" value="map"/>
+      <param name="robot_namespace" value="amigo_"/>
+      <param name="merged_map_topic" value="map"/>
+      <param name="world_frame" value="world"/>
+      <param name="known_init_poses" value="true"/>
+      <param name="merging_rate" value="1.5"/>
+      <param name="discovery_rate" value="0.5"/>
+      <param name="estimation_rate" value="0.5"/>
+      <param name="estimation_confidence" value="1.0"/>
+    </node>
+  </group>
+  
+  
+  
+  <node pkg="tf" type="static_transform_publisher" name="world_to_$(arg ns_1)_tf_broadcaster"  args="0 0 0 0 0 0  /world /$(arg ns_1)/map 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="world_to_$(arg ns_2)_tf_broadcaster" args="0 0 0 0 0 0 /world /$(arg ns_2)/map 100"/>
+
 
   <group if="$(arg open_rviz)"> 
     <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find harmonic_map_multirobot_exploration)/rviz/multi_amigo_slam.rviz"/>
   </group>
 
 </launch>
+
+<!-- 0.66 1.66 0 3.14 0 0
+3 0.66 0 3.14 0 0 -->

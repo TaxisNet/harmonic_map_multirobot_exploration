@@ -1,5 +1,5 @@
 <launch>
-	<arg name="robot_name" default="amigo_3"/>
+	<arg name="robot_name" default="amigo_1"/>
 	<arg name ="robot_port" default="1"/>
 	<arg name="lidar_port" default="0"/>
 	<group ns="$(arg robot_name)">

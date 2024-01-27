@@ -87,7 +87,7 @@ function callback(~,msg)
         end
 
         try
-            q_front = hm.getNearestFrontier(robotPos);
+            q_front = hm.getNearestFrontier(robotPos, true);
         catch
             disp("Error finding nearest frontier")
             q_front = hm.frontiers_q(1,:)';

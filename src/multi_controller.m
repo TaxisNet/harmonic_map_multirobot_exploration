@@ -11,8 +11,8 @@ rosinit
 
 global hm_cell q_front_cell robot_pos_cell namespace K_ang K_lin 
 hm_cell = {HarmonicMap(); HarmonicMap()};
-K_ang = 0.25;
-K_lin = 0.08;
+K_ang = 0.4;
+K_lin = 0.05;
 
 namespace ={ 'tb3_0', 'tb3_1'};
 robot_pos_cell= cell(1,2);
@@ -48,7 +48,15 @@ while(1)
             % robotQuat= zeros(1,4);
             desired_vel = hm_cell{i}.getFieldVelocity(robot_pos_cell{i},q_front_cell{i});
             %no q given-> gets nearest (in q-space)frontier
-            
+             
+        %%%%plot pos%%%%%
+        hm_cell{i}.fig;
+        subplot(121)
+        hold on
+        plot(robotPos(1), robotPos(2), 'rsquare')
+        quiver(robotPos(1), robotPos(2), desired_vel(1), desired_vel(2), 1)
+        hold off
+        %%%%
             
             [linVel, angVel] = velocityController(robotQuat, desired_vel);
             
@@ -89,7 +97,10 @@ function callback_1(~,msg)
         tic
         hm_cell{robot_num}.setBoundaries(boundaries,isFree);
         toc
-        hm_cell{robot_num}.plotMap
+        hm_cell{robot_num}.plotMap()
+
+      
+
         
         if(isempty(hm_cell{robot_num}.frontiers_q))
             disp("Exporation Done!")
@@ -97,7 +108,7 @@ function callback_1(~,msg)
         end
         
         try
-            q_front_cell{robot_num} = hm_cell{robot_num}.getNearestFrontier(robot_pos_cell{robot_num});
+            q_front_cell{robot_num} = hm_cell{robot_num}.getNearestFrontier(robot_pos_cell{robot_num}, true);
         catch
             disp("Error finding nearest frontier")
             q_front_cell{robot_num} = hm_cell{robot_num}.frontiers_q(1,:)';
@@ -140,7 +151,7 @@ function callback_2(~,msg)
         end
         
         try
-            q_front_cell{robot_num} = hm_cell{robot_num}.getNearestFrontier(robot_pos_cell{robot_num});
+            q_front_cell{robot_num} = hm_cell{robot_num}.getNearestFrontier(robot_pos_cell{robot_num}, true);
         catch
             disp("Error finding nearest frontier")
             q_front_cell{robot_num} = hm_cell{robot_num}.frontiers_q(1,:)';
@@ -208,7 +219,7 @@ function [linVel, angVel] = velocityController(quat, desired_vel)
     %linVel = K_lin*norm(desired_vel);
 
     %turningCoef = max((1-((delta_yaw)/(pi/2)).^4),0);
-    turningCoef = abs(delta_yaw)<(pi/6)
+    turningCoef = abs(delta_yaw)<(pi/6);
     linVel = K_lin* turningCoef*norm(desired_vel);
 end
 

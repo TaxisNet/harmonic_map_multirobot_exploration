@@ -69,7 +69,7 @@ class Computation():
         self.mapResolution = msg.info.resolution
         self.mapOrigin = [-int(msg.info.origin.position.x),-int(msg.info.origin.position.y)]
         self.robot_radius_in_cells = ceil(self.robot_radius/msg.info.resolution)
-        self.robot_radius_in_cells+=1
+        # self.robot_radius_in_cells+=1
 
     def conv2(self,x,y,mode='same'):
 
@@ -134,7 +134,8 @@ class Computation():
         map_data[np.logical_and(img_dilate==1,map_data<0)] = 0  
 
         #DILATE BOUNDARIES BY ROBOT RADIUS
-        kernel = np.ones((self.robot_radius_in_cells, self.robot_radius_in_cells), dtype=np.uint8)
+        # kernel = np.ones((self.robot_radius_in_cells, self.robot_radius_in_cells), dtype=np.uint8)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (self.robot_radius_in_cells, self.robot_radius_in_cells))
         bound = np.array(map_data>0, dtype=np.uint8)
         img_dilate = cv2.dilate(bound, kernel)
         map_data[img_dilate==1]=1
@@ -191,22 +192,13 @@ class Computation():
         #contour_hierarchy_list = self.get_contours_by_hierarchy(contours, hierarchy )
 
 
-        #GET ROBOT POSITION
-        try:
-            (trans,rot) =  self.listener.lookupTransform(self.tf_map_frame, self.tf_robot_frame, rospy.Time(0))
-            #pos in image pixels
-            robot_position= np.double([trans[0]/self.mapResolution,trans[1]/self.mapResolution]) + np.double(self.mapOrigin)/self.mapResolution
-            robot_position = np.round(robot_position).astype(int)
-            #do not remove because it cv2 pointPolygonTest produces an error.
-            robot_position = (int(robot_position[0]), int(robot_position[1]))
-        except:
-            print("Error: Cannot get {}'s positions".format(self.namespace))
+        
 
         #find outer side of outer contour
         for i, hierarchy_vec in enumerate(hierarchy[0]):
             if(hierarchy_vec[3]==-1):
                 #check if robot is inside:                
-                if(cv2.pointPolygonTest(contours[i], robot_position, measureDist=False) >= 0):
+                if(cv2.pointPolygonTest(contours[i], self.robot_position, measureDist=False) >= 0):
                     outer_outer_bound_indx = i
                     break
 
@@ -221,7 +213,7 @@ class Computation():
             
             #if mutiple inner outer level boundaries
             while(True):
-                if(cv2.pointPolygonTest(contours[cur_bound_indx], robot_position, measureDist=False) >= 0):
+                if(cv2.pointPolygonTest(contours[cur_bound_indx], self.robot_position, measureDist=False) >= 0):
                     outer_bound_indx = cur_bound_indx
                     break
                 if(hierarchy[0][cur_bound_indx][0]== -1): break
@@ -258,11 +250,11 @@ class Computation():
 
 
         # ##########
-        # robot_position= np.double([1/self.mapResolution,2/self.mapResolution]) + np.double(self.mapOrigin)/self.mapResolution
-        # robot_position = np.round(robot_position).astype(int)
+        # self.robot_position= np.double([1/self.mapResolution,2/self.mapResolution]) + np.double(self.mapOrigin)/self.mapResolution
+        # self.robot_position = np.round(self.robot_position).astype(int)
         # bou = boundary.copy()
-        # x = robot_position[0]
-        # y = robot_position[1]
+        # x = self.robot_position[0]
+        # y = self.robot_position[1]
         # print("{} {}".format(x,y))
         # bou[x,y] = 2
         # plt.imshow(bou, cmap='gray')
@@ -323,6 +315,19 @@ class Computation():
     
 
     def prefilter_map(self, map_data, map_size):
+        #GET ROBOT POSITION
+        try:
+            (trans,rot) =  self.listener.lookupTransform(self.tf_map_frame, self.tf_robot_frame, rospy.Time(0))
+            #pos in image pixels
+            self.robot_position= np.double([trans[0]/self.mapResolution,trans[1]/self.mapResolution]) + np.double(self.mapOrigin)/self.mapResolution
+            self.robot_position = np.round(self.robot_position).astype(int)
+            #do not remove because it cv2 pointPolygonTest produces an error.
+            self.robot_position = (int(self.robot_position[0]), int(self.robot_position[1]))
+           
+        except:
+            print("Error: Cannot get {}'s positions".format(self.namespace))
+            return
+
         # IMPLEMENTATION OF THE occGridMapping_py FUNCTION
         map_output = np.transpose(np.reshape(map_data, (map_size[0],map_size[1]),order='F'))
         map_data = map_output.copy()
@@ -330,13 +335,29 @@ class Computation():
         map_data[map_output.copy() == -1] = 0
         map_data[ np.logical_and(map_output.copy() < 50,map_output.copy() != -1)] = self.lo_min
         map_data[map_output.copy() >= 50] =self.lo_max
+        
+
+        #space occupied by self is free
+        # plt.subplot(1,2,1)
+        # plt.imshow(map_data)
+        # rows, cols = np.indices(map_data.shape)
+        # distances = np.sqrt((rows - self.robot_position[1])**2 + (cols - self.robot_position[0])**2)
+        # mask = distances <= self.robot_radius_in_cells
+        # map_data[mask] = self.lo_min
+        # plt.subplot(1,2,2)
+        # plt.imshow(map_data)
+        # plt.show()
+        
+        
+        
         map_data_uint8 = np.uint8(map_data.copy())
-    
-        # INFLATE THE BOUNDARY
+       # INFLATE THE BOUNDARY
         kernel = np.ones((1,1), np.uint8) #kernel = np.ones((3,3), np.uint8)
         map_uint8_dilate = cv2.dilate(map_data_uint8, kernel, iterations=1)
         map_dilate = map_data.copy()
         map_dilate[map_uint8_dilate == np.max(map_uint8_dilate)] = self.lo_max
+        
+
         
         return map_dilate
 
@@ -407,6 +428,7 @@ class Computation():
 #     rospy.init_node('boundary_comp_node', anonymous=True)
 #     ns = rospy.get_namespace()[:-1]
 #     computation = Computation(ns)
+#     computation.robot_radius=(0.5/2)
 #     rate = rospy.Rate(0.2)
     
 #     while not rospy.is_shutdown():
@@ -421,9 +443,9 @@ if __name__=='__main__':
 
     ns = rospy.get_namespace()[:-1]
     computation = Computation(ns)
-    computation.robot_radius=(0.33/2)
+    computation.robot_radius=(0.56/2)
     computation.tf_robot_frame = computation.namespace +'/base_link'
-    rate = rospy.Rate(0.2)
+    rate = rospy.Rate(0.15)
     
     while not rospy.is_shutdown():
         computation.publish_data()

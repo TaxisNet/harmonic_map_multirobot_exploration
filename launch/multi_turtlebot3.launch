@@ -4,13 +4,13 @@
   <arg name="second_tb3" default="tb3_1"/>
   <arg name="third_tb3"  default="tb3_2"/>
 
-  <arg name="first_tb3_x_pos" default="0.75"/>
-  <arg name="first_tb3_y_pos" default="0.75"/>
+  <arg name="first_tb3_x_pos" default="1.75"/>
+  <arg name="first_tb3_y_pos" default="0.5"/>
   <arg name="first_tb3_z_pos" default="0.0"/>
   <arg name="first_tb3_yaw"   default="0.0"/>
 
-  <arg name="second_tb3_x_pos" default="6.2"/>
-  <arg name="second_tb3_y_pos" default="3.2"/>
+  <arg name="second_tb3_x_pos" default="2.5"/>
+  <arg name="second_tb3_y_pos" default="2.5"/>
   <arg name="second_tb3_z_pos" default="0.0"/>
   <arg name="second_tb3_yaw"   default="0.0"/>
  
@@ -22,11 +22,11 @@
   -->
   
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/turtlebot3_maze.world"/>
+    <arg name="world_name" value="$(find harmonic_map_multirobot_exploration)/include/worlds/test.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="false"/>
-    <arg name="headless" value="false"/>
+    <arg name="headless" value="f   alse"/>
     <arg name="debug" value="false"/>
   </include>  
 

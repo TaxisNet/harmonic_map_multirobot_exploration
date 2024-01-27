@@ -20,7 +20,7 @@
       <param name="temporalUpdate" value="-1"/> 
       <param name="particles" value="200"/>  
       <param name="minimumScore" value="300."/>
-      <param name="delta" value="0.05" />
+      <param name="delta" value="0.03" />
       <param name="map_update_interval" value="1." />
       <param name="srr" value="0.1" />
       <param name="srt" value="0.2" />

@@ -17,6 +17,7 @@ class MergingComputation(Computation):
         self.mergedMapSize_py = [msg.info.width, msg.info.height]
         self.mergedMapResolution = msg.info.resolution
         self.mergedMapOrigin = [-int(msg.info.origin.position.x),-int(msg.info.origin.position.y)]
+        #self.checkMerge()
         try:
             self.checkMerge()
         except:
@@ -24,7 +25,27 @@ class MergingComputation(Computation):
 
 
     def checkMerge(self):
-        map_data = self.prefilter_map(self.merged_map_data_tmp, self.mergedMapSize_py)
+        # prefilter_map
+        # IMPLEMENTATION OF THE occGridMapping_py FUNCTION
+        map_output = np.transpose(np.reshape(self.merged_map_data_tmp, (self.mergedMapSize_py[0],self.mergedMapSize_py[1]),order='F'))
+        map_data = map_output.copy()
+        map_data[map_output.copy() == -1] = 0
+        map_data[ np.logical_and(map_output.copy() < 50,map_output.copy() != -1)] = self.lo_min
+        map_data[map_output.copy() >= 50] =self.lo_max
+
+        map_data_uint8 = np.uint8(map_data.copy())
+
+
+        # INFLATE THE BOUNDARY
+        kernel = np.ones((1,1), np.uint8) #kernel = np.ones((3,3), np.uint8)
+        map_uint8_dilate = cv2.dilate(map_data_uint8, kernel, iterations=1)
+        map_dilate = map_data.copy()
+        map_dilate[map_uint8_dilate == np.max(map_uint8_dilate)] = self.lo_max
+
+        map_data = map_dilate
+
+        #########################
+
         map_data[map_data>0] = 1 #occupied 
         map_data[map_data<0] = -1 # unoccupied
         #zero is unknown
@@ -152,7 +173,7 @@ if __name__=='__main__':
 
     mc0 = MergingComputation('tb3_0', ['tb3_1'])
     mc1 = MergingComputation('tb3_1', ['tb3_0'])
-    rate = rospy.Rate(0.25)
+    rate = rospy.Rate(0.2)
 
     while(not rospy.is_shutdown()):
         mc0.publish_data()

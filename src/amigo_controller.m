@@ -3,24 +3,28 @@ rosshutdown
 %for custom ros message 
 addpath('../../matlab_msg_gen_ros1/glnxa64/install/m')
 
+
+
 clear classes
 rehash toolboxcache
 
 
 rosinit
-
 % globals
-global hm K_ang K_lin q_front robotPos
+global hm K_ang K_lin q_front robotPos figure_file
+figure_file = strcat('/media/taxis/Intenso/Results/figures/hm_figs_run',string(datetime('now',Format='dd-MM_HH_mm')), '/')
+mkdir(figure_file)
+
 hm = HarmonicMap();
 hm.fig = figure(1);
-K_ang = 0.25;
-K_lin = 0.08;
+K_ang = 0.35;
+K_lin = 0.06;
 
 %ROS
 % node = ros.Node('/matlab_node');
 % sub = ros.Subscriber(node,'boundary_info','boundary_compute/boundary_info', @callback , DataFormat='struct');
 % velocity_pub = ros.Publisher(node, '/cmd_vel','geometry_msgs/Twist');
-namespace='/amigo_2';
+namespace='/amigo_1';
 boundary_info_sub = rossubscriber(strcat(namespace,'/boundary_info'),'boundary_compute/boundary_info', @callback , DataFormat='struct');
 velocity_pub = rospublisher(strcat(namespace,'/cmd_vel'),'geometry_msgs/Twist', DataFormat='struct');
     
@@ -61,12 +65,12 @@ while(1)
         end
     end
     send(velocity_pub,twistMsg);
-    waitfor(rate);
+waitfor(rate);
 end
 
 
 function callback(~,msg)
-    global hm q_front robotPos
+    global hm q_front robotPos figure_file
 
     if(~msg.CompFailed)
         [boundaries, isFree, ~] = parseBoundaries(msg);
@@ -94,14 +98,14 @@ function callback(~,msg)
         
         %-------save HM fig ---------
         fig_name = strcat('hm_fig_',string(datetime('now',Format='dd-MM-yy_HHmmss')));
-        saveas(hm.fig,strcat('/media/taxis/Intenso/Results/figures/',fig_name), 'epsc')
+        saveas(hm.fig,strcat(figure_file,fig_name), 'epsc')
         %----------------------------
 
 
 
         if(isempty(hm.frontiers_q))
             disp("Exporation Done!")
-            save(fig_name)
+            save(strcat(figure_file,'matlab_ws'))
             rosshutdown
             return
         end
