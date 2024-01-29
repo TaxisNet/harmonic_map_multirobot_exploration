@@ -34,10 +34,10 @@ velocity_pub = {velocity_pub_1, velocity_pub_2};
 tftree = rostf("DataFormat","struct");
 
 rate = rosrate(10);
-while(1)
+while(0)
     parfor i=1:length(hm_cell)
         twistMsg = rosmessage(velocity_pub{i});
-        if(~isempty(hm_cell{i}.frontiers_q) && ~isempty(q_front_cell{i}))
+        if(~isempty(hm_cell{i}.frontiers_q) && ~isempty(q_front_cell{i})&& 0)
             robotPosMsg = getTransform(tftree, strcat( namespace{i}, '/map'), strcat( namespace{i}, '/base_footprint'));
             robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
             robot_pos_cell{i}=robotPos;
@@ -219,7 +219,7 @@ function [linVel, angVel] = velocityController(quat, desired_vel)
     %linVel = K_lin*norm(desired_vel);
 
     %turningCoef = max((1-((delta_yaw)/(pi/2)).^4),0);
-    turningCoef = abs(delta_yaw)<(pi/6);
+    turningCoef = abs(delta_yaw)<(pi/3);
     linVel = K_lin* turningCoef*norm(desired_vel);
 end
 

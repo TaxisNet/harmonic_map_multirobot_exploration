@@ -25,6 +25,7 @@ vel_pub = rospublisher('/cmd_vel','geometry_msgs/Twist', DataFormat='struct');
 
 
 tftree = rostf("DataFormat","struct");
+pause(0.5)
 
 rate = rosrate(10);
 while(1)

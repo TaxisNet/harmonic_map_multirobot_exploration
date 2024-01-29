@@ -30,7 +30,7 @@ class Computation():
 
         #TF LISTENER
         self.listener = tf.TransformListener()
-
+        
 
         # MAP SUBSCRIBER
         self.map_sub = rospy.Subscriber(self.map_topic,OccupancyGrid,self.map_msg_callback)
@@ -141,39 +141,25 @@ class Computation():
         map_data[img_dilate==1]=1
 
 
-        # FREE CONNECTED
-        # freeDis = np.ones(map_data.shape, dtype=np.uint8)
-        # freeDis[map_data<0] = 0
-
-        # IMFILL
-        # FUNCTION 
-        # im_th = freeDis.copy()
+       
+        #convMat = np.array([[0,1,0],[1,-4,1],[0,1,0]]) 
+        # merged map might be fuzzy and need a larger kernel for edge detection
+        convMat = np.ones((5,5))
+        convMat[2,2] = -24
         
-        # h, w = im_th.shape[:2]
-        # mask = np.zeros((h+2, w+2), np.uint8)
-
-        # cv2.floodFill(freeDis, mask, (int(position[0]),int(position[1])),1,flags=4)
-
-        # im_floodfill_inv = freeDis
-        # freeDis = np.logical_or(im_th,im_floodfill_inv)
-
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # !!!!!!!!!!!!!!!!!!!!!! THIS FREEDIS CODE IS DISREGARDED AS IT PRODUCES ERRORS
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        #map_data[np.logical_not(freeDis.copy())] = 0
-
-
         free = map_data.copy() < 0
-        convMat = np.array([[0,1,0],[1,-4,1],[0,1,0]]) #
-        bound = self.conv2(free,convMat,mode='same')
-        
+        # bound = self.conv2(free,convMat,mode='same')
+        bound= cv2.Canny(np.array(map_data<0, dtype=np.uint8),0,1)
+        b1 = bound
         obsBound = bound.copy() >0
-        obsBound = np.logical_and(obsBound,(map_data>0))
+        #obsBound = np.logical_and(obsBound,(map_data>0))
 
         unknown = map_data.copy()==0
-        bound = self.conv2(unknown,convMat,mode='same')
+        #bound = self.conv2(unknown,convMat,mode='same')
+        bound= cv2.Canny(np.array(map_data==0, dtype=np.uint8),0,1)
+        b2 = bound
         freeBound = bound.copy() > 0
-        freeBound = np.logical_and(freeBound.copy(),(map_data<0))
+        #freeBound = np.logical_and(freeBound.copy(),(map_data<0))
 
         boundary = np.zeros(map_data.shape)
         boundary[freeBound] = -1
@@ -181,17 +167,35 @@ class Computation():
 
         # Find the connected boundary components 
         bb = (boundary.copy() != 0 )
+        bb = np.logical_or(map_data==1, obsBound)
         bb = np.array(bb, dtype=np.uint8)
-        
 
+        #close any holes
+        bb = cv2.morphologyEx(bb, cv2.MORPH_CLOSE, np.ones((5,5)))
+
+
+        # #debug plots
+        # plt.subplot(221)
+        # plt.imshow(map_data)
+        # plt.subplot(222)
+        # plt.imshow(bb)
         
-        
+        # plt.subplot(223)
+        # plt.imshow(obsBound)
+        # plt.subplot(224)
+        # plt.imshow(freeBound)
+        # plt.show()
+
+        # plt.subplot(325)
+        # plt.imshow(b1)
+        # plt.subplot(326)
+        # plt.imshow(b2)
+        # plt.show()
+
+
+
         #FINALLY FIND THE CONTOURS
         contours, hierarchy  = cv2.findContours(bb,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
-        
-        #contour_hierarchy_list = self.get_contours_by_hierarchy(contours, hierarchy )
-
-
         
 
         #find outer side of outer contour
@@ -243,11 +247,18 @@ class Computation():
                 inner_bou_indx = hierarchy[0][inner_bou_indx][0]
             else: break
 
-        # debug
+
+        #check is free
+        frontiers = np.logical_and(freeBound,obsBound)
+        #frontiers = cv2.dilate(np.array(frontiers, dtype=np.uint8),np.ones((2,2)))   
+        isFree = np.full(np.shape(xl),False)
+        isFree[frontiers[yl,xl]] = True
+        
+        # # debug
         # print([outer_outer_bound_indx, outer_bound_indx, in_l])
         # print(hierarchy)
         # print("--------------\n")
-
+    
 
         # ##########
         # self.robot_position= np.double([1/self.mapResolution,2/self.mapResolution]) + np.double(self.mapOrigin)/self.mapResolution
@@ -263,7 +274,6 @@ class Computation():
 
                 
 
-        boundary_out = boundary
         bbcopy = np.array(255*np.ones((np.shape(map_data.copy())[0],np.shape(map_data.copy())[1],3)),dtype=np.uint8)
         bbcopy[freeBound,0] = 0
         bbcopy[freeBound,2] = 0
@@ -289,7 +299,7 @@ class Computation():
         # plt.gca().set_aspect('equal', adjustable='box')
         # plt.show()
 
-        return xl,yl,nb,nl,boundary_out
+        return xl,yl,nb,nl,isFree
     
     def get_contours_by_hierarchy(self, contours, hierarchy ):
         #!!!!!!!!do not use!!!!!!
@@ -368,22 +378,11 @@ class Computation():
         # CHECK IF MAP HAS BEEN RECEIVED
         if (not self.map_data_tmp == None):
             prefiltered_map  = self.prefilter_map(self.map_data_tmp,self.mapSize_py)
-            # # GET ROBOT POSITION
-            # try:
-            #     (trans,rot) =  self.listener.lookupTransform(self.tf_map_frame, self.tf_robot_frame, rospy.Time(0))
-            #     #pos in image pixels
-            #     self.position= np.double([trans[0]/self.mapResolution,trans[1]/self.mapResolution]) + np.double(self.mapOrigin)/self.mapResolution
-            #     self.position = self.position.astype(int)
-            #     haspos = True
-            # except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            #     print("pos exception")
-            #     failed_comp = True
-            #     return failed_comp
-
+           
             # TRY COMPUTATION
             # xl_py, yl_py,nb_py,nl_py,boundary_py = self.boundaryExtraction(prefiltered_map)
             try:
-                xl_py, yl_py,nb_py,nl_py,boundary_py = self.boundaryExtraction(prefiltered_map)    
+                xl_py, yl_py,nb_py,nl_py,is_bou_free = self.boundaryExtraction(prefiltered_map)    
                 failed_comp = False
             except:
                 print("boundary extraction exception")
@@ -391,8 +390,6 @@ class Computation():
 
             # PARTITION THE BOUNDARY TO FREE AND OCC
             if not failed_comp:
-                is_bou_free = np.full(np.shape(xl_py),False)
-                is_bou_free[boundary_py[yl_py,xl_py] < 0] = True
                 self.boundary_info_msg.xl = xl_py
                 self.boundary_info_msg.yl = yl_py
                 self.boundary_info_msg.boundary_index = nl_py
@@ -406,7 +403,8 @@ class Computation():
                 self.boundary_info_msg.map_resolution = self.mapResolution
                 self.boundary_info_msg.comp_failed = failed_comp
                 self.boundary_info_pub.publish(self.boundary_info_msg)
-                # print("Boundary Info published")
+               
+                #print("Boundary Info published")
             else: 
                 print('Computation Failed')
                 self.boundary_info_msg.comp_failed = failed_comp
@@ -424,31 +422,31 @@ class Computation():
             
 
 
-# if __name__=='__main__':
-#     rospy.init_node('boundary_comp_node', anonymous=True)
-#     ns = rospy.get_namespace()[:-1]
-#     computation = Computation(ns)
-#     computation.robot_radius=(0.5/2)
-#     rate = rospy.Rate(0.2)
-    
-#     while not rospy.is_shutdown():
-#         #about 0.3 to 0.7 secs
-#         computation.publish_data()
-        
-#         rate.sleep()
-
-
 if __name__=='__main__':
     rospy.init_node('boundary_comp_node', anonymous=True)
-
     ns = rospy.get_namespace()[:-1]
     computation = Computation(ns)
-    computation.robot_radius=(0.56/2)
-    computation.tf_robot_frame = computation.namespace +'/base_link'
-    rate = rospy.Rate(0.15)
+    computation.robot_radius=(0.2/2)
+    rate = rospy.Rate(0.2)
     
     while not rospy.is_shutdown():
+        #about 0.3 to 0.7 secs
         computation.publish_data()
         
         rate.sleep()
+
+
+# if __name__=='__main__':
+#     rospy.init_node('boundary_comp_node', anonymous=True)
+
+#     ns = rospy.get_namespace()[:-1]
+#     computation = Computation(ns)
+#     computation.robot_radius=(0.56/2)
+#     computation.tf_robot_frame = computation.namespace +'/base_link'
+#     rate = rospy.Rate(1)
+    
+#     while not rospy.is_shutdown():
+#         computation.publish_data()
+        
+#         rate.sleep()
 
