@@ -4,4 +4,4 @@ testing.m
 *.jpg
 *.jpeg
 *.png
-
+**/__pycache__/
