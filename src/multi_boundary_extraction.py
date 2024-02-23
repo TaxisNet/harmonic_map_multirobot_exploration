@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from boundary_extraction import *
-
+from std_msgs.msg import Bool
+ 
 class MergingComputation(Computation):
     def __init__(self,ns,robot_list):
         self.other_robots_ns = robot_list
@@ -9,7 +10,7 @@ class MergingComputation(Computation):
         self.merged_map_topic = self.merge_ns+'/new_map'
         self.tf_merged_map_frame = 'world'
         self.merged_map_sub = rospy.Subscriber(self.merged_map_topic,OccupancyGrid,self.merged_msg_callback)
-
+        self.is_merged_pub = rospy.Publisher(self.merge_ns+'/is_merged',Bool, queue_size=1)
         super(MergingComputation, self).__init__(ns)
 
     def merged_msg_callback(self,msg):
@@ -180,6 +181,8 @@ class MergingComputation(Computation):
         print("Merged {}!".format(self.namespace))
         self.map_sub.unregister()
         self.merged_map_sub.unregister()
+        
+        self.is_merged_pub.publish(True)
 
         self.tf_map_frame = self.tf_merged_map_frame
         self.map_sub = rospy.Subscriber(self.merged_map_topic,OccupancyGrid,self.map_msg_callback)
@@ -191,10 +194,10 @@ if __name__=='__main__':
     rospy.init_node('boundary_comp_node', anonymous=True)
 
     mc0 = MergingComputation('tb3_0', ['tb3_1'])
-    mc0.robot_radius = 0.05
+    mc0.robot_radius = 0.17
     mc1 = MergingComputation('tb3_1', ['tb3_0'])
-    mc1.robot_radius = 0.05
-    rate = rospy.Rate(0.2)
+    mc1.robot_radius = 0.17
+    rate = rospy.Rate(0.5)
 
     while(not rospy.is_shutdown()):
         mc0.publish_data()

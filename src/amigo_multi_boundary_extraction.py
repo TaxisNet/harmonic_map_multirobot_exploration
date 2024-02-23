@@ -17,11 +17,11 @@ if __name__=='__main__':
 
 
     mergComp = MergingComputation(ns, other_robots)
-    mergComp.robot_radius=(0.33/2)
+    mergComp.robot_radius=(0.45/2)
     mergComp.tf_base_frame ='/base_link'
     mergComp.tf_robot_frame = mergComp.namespace + mergComp.tf_base_frame
 
-    rate = rospy.Rate(0.25)
+    rate = rospy.Rate(1)
 
     while(not rospy.is_shutdown()):
         mergComp.publish_data()

@@ -7,8 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /TF1/Tree1
-        - /Map_11
-        - /Map_Merged1
       Splitter Ratio: 0.5259875059127808
     Tree Height: 566
   - Class: rviz/Selection
@@ -120,7 +118,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.009999999776482582
+      Size (m): 0.019999999552965164
       Style: Flat Squares
       Topic: /amigo_2/scan
       Unreliable: false
@@ -289,22 +287,22 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: Map_2
       Topic: /amigo_1/map
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: Map_Merged
       Topic: /map_merge/map
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -332,7 +330,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -4.690000057220459
+      Angle: -4.830003261566162
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -342,7 +340,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: -117.70297241210938
+      Scale: -153.34083557128906
       Target Frame: map
       X: 0.5968961119651794
       Y: 0.12370463460683823

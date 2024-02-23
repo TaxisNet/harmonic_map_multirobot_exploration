@@ -12,11 +12,12 @@
 
   <!--launch gmapping w laser filter for each turtle bot-->
   <group ns="$(arg first_tb3)">
-    <!-- Laser Filter: make inf scans appear as maxRange-->
+    <!-- Laser Filter: make inf scans appear as maxRange
     <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
       <rosparam command="load" file="$(find harmonic_map_multirobot_exploration)/config/my_laser_filter.yaml"/>
       <remap from="base_scan" to="scan"/>
     </node>
+    -->
 
     <node pkg="gmapping" type="slam_gmapping" name="turtlebot3_slam_gmapping" output="screen">
       <param name="base_frame" value="$(arg first_tb3)/base_footprint"/>
@@ -28,11 +29,12 @@
   </group>
 
   <group ns="$(arg second_tb3)">
-    <!-- Laser Filter: make inf scans appear as maxRange-->
+    <!-- Laser Filter: make inf scans appear as maxRange
     <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
       <rosparam command="load" file="$(find harmonic_map_multirobot_exploration)/config/my_laser_filter.yaml"/>
       <remap from="base_scan" to="scan"/>
     </node>
+    -->
 
     <node pkg="gmapping" type="slam_gmapping" name="turtlebot3_slam_gmapping" output="screen">
       <param name="base_frame" value="$(arg second_tb3)/base_footprint"/>
@@ -45,7 +47,7 @@
 
 
   
-   <include file="$(find harmonic_map_multirobot_exploration)/launch/multi_map_merge.launch"/> -->
+  <include file="$(find harmonic_map_multirobot_exploration)/launch/multi_map_merge.launch"/>
   <!-- Correct map origin-->
   <node pkg="harmonic_map_multirobot_exploration" type="move_map_origin.py" name="move_map_origin" output="screen"/>
 

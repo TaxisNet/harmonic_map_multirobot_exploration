@@ -9,16 +9,17 @@ rehash toolboxcache
 
 rosinit
 
-global hm_cell q_front_cell robot_pos_cell map_frame_cell namespace K_ang K_lin  isMerged
+global hm_cell q_front_cell robot_pos_cell map_frame_cell namespace K_ang K_lin  isMerged figure_file
+
 hm_cell = {HarmonicMap(); HarmonicMap()};
 hm_cell{1}.fig = figure(1);
 hm_cell{2}.fig = figure(2);
 K_ang = 0.4;
-K_lin = 0.08;
+K_lin = 0.06;
 
 isMerged = false;
 
-namespace ={ 'tb3_0', 'tb3_1'};
+namespace ={ 'amigo_1', 'amigo_3'};
 robot_pos_cell= cell(1,2);
 q_front_cell = cell(1,2);
 
@@ -47,7 +48,7 @@ while(1)
     for i=1:length(hm_cell)
         twistMsg = rosmessage(velocity_pub{i});
         if(~isempty(hm_cell{i}.frontiers_q) && ~isempty(q_front_cell{i}))
-            robotPosMsg = getTransform(tftree, map_frame_cell{i}, strcat( namespace{i}, '/base_footprint'));
+            robotPosMsg = getTransform(tftree, map_frame_cell{i}, strcat( namespace{i}, '/base_link'));
             robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
             robot_pos_cell{i}=robotPos;
             robotQuat = robotPosMsg.Transform.Rotation;
