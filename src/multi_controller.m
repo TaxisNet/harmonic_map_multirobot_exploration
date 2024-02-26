@@ -10,9 +10,6 @@ rehash toolboxcache
 rosinit
 
 global hm_cell q_front_cell robot_pos_cell map_frame_cell namespace K_ang K_lin  isMerged
-hm_cell = {HarmonicMap(); HarmonicMap()};
-hm_cell{1}.fig = figure(1);
-hm_cell{2}.fig = figure(2);
 K_ang = 0.4;
 K_lin = 0.08;
 
@@ -27,9 +24,12 @@ q_front_cell = cell(1,N);
 boundary_info_sub = cell(1,N);
 velocity_pub = cell(1,N);
 
+map_frame_cell = 'map';
+
 for k=1:N
 hm_cell{k} = HarmonicMap();
-namespace{k} = strcat("tb3_", string(k));
+hm_cell{k}.fig = figure(k);
+namespace{k} = strcat("tb3_", string(k-1));
 
 boundary_info_sub{k} = rossubscriber(strcat(namespace{k},'/boundary_info'),'boundary_compute/boundary_info', {@callback, k}, DataFormat='struct');
 velocity_pub{k} = rospublisher(strcat(namespace{k},'/cmd_vel'),'geometry_msgs/Twist', DataFormat='struct');
@@ -41,11 +41,11 @@ pause(1)
 
 rate = rosrate(10);
 
-while(0)
-    parfor i=1:length(N)
+while(1)
+    for i=1:N
         twistMsg = rosmessage(velocity_pub{i});
         if(~isempty(hm_cell{i}.frontiers_q) && ~isempty(q_front_cell{i}))
-            robotPosMsg = getTransform(tftree, map_frame_cell{i}, strcat( namespace{i}, '/base_footprint'));
+            robotPosMsg = getTransform(tftree, map_frame_cell, strcat( namespace{i}, '/base_footprint'));
             robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
             robot_pos_cell{i}=robotPos;
             robotQuat = robotPosMsg.Transform.Rotation;
@@ -125,7 +125,7 @@ end
 function updateIsMerged(~,msg)
     global isMerged map_frame_cell
     isMerged = logical(msg.Data);
-    map_frame_cell = {'world', 'world'};
+    map_frame_cell = 'world';
     disp('Map merged')
 end
 
