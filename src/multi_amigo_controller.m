@@ -39,7 +39,7 @@ velocity_pub_2  = rospublisher(strcat(namespace{2},'/cmd_vel'),'geometry_msgs/Tw
 
 
 velocity_pub = {velocity_pub_1, velocity_pub_2};
-is_merged_pub = rossubscriber('map_merge/is_merged','std_msgs/Bool', @updateIsMerged, DataFormat='struct');
+is_merged_pub = rossubscriber('map_merge/is_merged','std_msgs/UInt16MultiArray', @updateIsMerged, DataFormat='struct');
 tftree = rostf("DataFormat","struct");
 pause(1)
 

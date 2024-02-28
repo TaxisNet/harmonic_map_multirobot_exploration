@@ -17,7 +17,7 @@ mkdir(figure_file)
 
 hm = HarmonicMap();
 hm.fig = figure(1);
-K_ang = 0.35;
+K_ang = 0.25;
 K_lin = 0.06;
 
 %ROS

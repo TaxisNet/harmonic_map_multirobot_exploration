@@ -35,8 +35,8 @@ classdef HarmonicMap < handle
         % Controls samples per unit. Outter has more that inner by 
         % innerObstacleSampleModifier
         % this might need tuning
-        samplesPerUnit = 100;
-        innerObstacleSampleModifier = 0.25;
+        samplesPerUnit = 30;
+        innerObstacleSampleModifier = 0.5;
         
         
         %to avoid errors
@@ -520,8 +520,8 @@ classdef HarmonicMap < handle
             end
                 
             obj.fig.Name = 'Harmonic Map Transformation';
-            figure(obj.fig)
-
+            set(0, 'CurrentFigure', obj.fig)
+            
             min_x = min(obj.boundaries{1}(:,1));
             max_x = max(obj.boundaries{1}(:,1));
             dx = max_x-min_x; 

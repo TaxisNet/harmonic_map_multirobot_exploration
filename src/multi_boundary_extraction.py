@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from boundary_extraction import *
-from std_msgs.msg import Bool
+from std_msgs.msg import UInt16MultiArray
  
 class MergingComputation(Computation):
     def __init__(self,ns,robot_list):
@@ -10,7 +10,7 @@ class MergingComputation(Computation):
         self.merged_map_topic = self.merge_ns+'/new_map'
         self.tf_merged_map_frame = 'world'
         self.merged_map_sub = rospy.Subscriber(self.merged_map_topic,OccupancyGrid,self.merged_msg_callback)
-        self.is_merged_pub = rospy.Publisher(self.merge_ns+'/is_merged',Bool, queue_size=1)
+        self.is_merged_pub = rospy.Publisher(self.merge_ns+'/is_merged',UInt16MultiArray, queue_size=1)
         super(MergingComputation, self).__init__(ns)
 
     def merged_msg_callback(self,msg):
@@ -170,19 +170,30 @@ class MergingComputation(Computation):
             #do not remove because it cv2 pointPolygonTest produces an error.
             robot_pos = (int(robot_pos[0]), int(robot_pos[1]))
             if(cv2.pointPolygonTest(contours[outer_bound_indx], robot_pos, measureDist=False) >= 0):
-                self.updateToMerged()
-                break
+                self.updateToMerged(robot_ns)
             try:
                 pass
             except:
                 print("Error getting pos of {}!".format(robot_ns))
         
-    def updateToMerged(self):
+    def updateToMerged(self, other_robot):
         print("Merged {}!".format(self.namespace))
         self.map_sub.unregister()
         self.merged_map_sub.unregister()
         
-        self.is_merged_pub.publish(True)
+        
+        try:
+            number_1 = int(self.namespace.split('_')[-1])
+            number_2 = int(other_robot.split('_')[-1])
+        except ValueError:
+            raise ValueError("Number part is not a valid integer, check that robot namespaces have the format 'NAME_NUMBER'")
+
+
+        arr = UInt16MultiArray()
+        arr.data = [number_1, number_2]
+        print(arr)
+
+        self.is_merged_pub.publish(arr)
 
         self.tf_map_frame = self.tf_merged_map_frame
         self.map_sub = rospy.Subscriber(self.merged_map_topic,OccupancyGrid,self.map_msg_callback)

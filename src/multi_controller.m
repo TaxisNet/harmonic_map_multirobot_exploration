@@ -1,4 +1,4 @@
-rosshutdown
+    rosshutdown
 %
 %for custom ros message
 addpath('../../matlab_msg_gen_ros1/glnxa64/install/m')
@@ -9,9 +9,9 @@ rehash toolboxcache
 
 rosinit
 
-global hm_cell q_front_cell robot_pos_cell map_frame_cell namespace K_ang K_lin  isMerged
+global hm_cell q_front_cell robot_pos_cell map_frame_cell boundary_msg namespace K_ang K_lin  isMerged
 K_ang = 0.4;
-K_lin = 0.08;
+K_lin = 0.25;
 
 isMerged = false;
 
@@ -23,14 +23,19 @@ q_front_cell = cell(1,N);
 
 boundary_info_sub = cell(1,N);
 velocity_pub = cell(1,N);
+boundary_msg = cell(1,N);
 
-map_frame_cell = 'map';
+
+map_frame_cell = cell(1,N);
+pos_handle = cell(1,N);
+merged_sub = rossubscriber('/map_merge/is_merged', 'std_msgs/UInt16MultiArray', @updateIsMerged, DataFormat='struct');
 
 for k=1:N
 hm_cell{k} = HarmonicMap();
+hm_cell{k}.samplesPerUnit = 30;
 hm_cell{k}.fig = figure(k);
 namespace{k} = strcat("tb3_", string(k-1));
-
+map_frame_cell{k} = strcat(namespace{k}, '/map');
 boundary_info_sub{k} = rossubscriber(strcat(namespace{k},'/boundary_info'),'boundary_compute/boundary_info', {@callback, k}, DataFormat='struct');
 velocity_pub{k} = rospublisher(strcat(namespace{k},'/cmd_vel'),'geometry_msgs/Twist', DataFormat='struct');
 end
@@ -45,7 +50,7 @@ while(1)
     for i=1:N
         twistMsg = rosmessage(velocity_pub{i});
         if(~isempty(hm_cell{i}.frontiers_q) && ~isempty(q_front_cell{i}))
-            robotPosMsg = getTransform(tftree, map_frame_cell, strcat( namespace{i}, '/base_footprint'));
+            robotPosMsg = getTransform(tftree, map_frame_cell{i}, strcat( namespace{i}, '/base_footprint'));
             robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
             robot_pos_cell{i}=robotPos;
             robotQuat = robotPosMsg.Transform.Rotation;
@@ -57,11 +62,12 @@ while(1)
             %no q given-> gets nearest (in q-space)frontier
              
         %%%%plot pos%%%%%
-        hm_cell{i}.fig;
+        set(0,'CurrentFigure',hm_cell{i}.fig);
         subplot(121)
         hold on
-        plot(robotPos(1), robotPos(2), 'rsquare')
-        quiver(robotPos(1), robotPos(2), desired_vel(1), desired_vel(2), 1)
+        delete(pos_handle{i})
+        pos_handle{i} = plot(robotPos(1), robotPos(2), 'rsquare');
+        %quiver(robotPos(1), robotPos(2), desired_vel(1), desired_vel(2), 1)
         hold off
         %%%%
             
@@ -79,10 +85,19 @@ end
 
 
 function callback(~,msg, robot_num)
-    global hm_cell q_front_cell robot_pos_cell
-
+global boundary_msg
     if(~msg.CompFailed)
-        [boundaries, isFree, ~] = parseBoundaries(msg);
+        boundary_msg{robot_num} = msg;
+    end
+    OLD_callback(robot_num) 
+end
+
+
+function OLD_callback(robot_num)
+    global hm_cell q_front_cell robot_pos_cell boundary_msg
+
+    if(~boundary_msg{robot_num}.CompFailed)
+        [boundaries, isFree, ~] = parseBoundaries(boundary_msg{robot_num});
         % check if order is counter clock wise.
         % Looks like the outter is and the inner aren't
         % The order depends on the ouput of cv.findContours
@@ -112,8 +127,28 @@ function callback(~,msg, robot_num)
             disp("Exporation Done!")
             return
         end
-  
+        
+        %todo: intergrate
+
+
+        % if(isMerged && (norm(q_front_cell{1}-q_front_cell{robot_num}) < 1e-9))
+        %     if(size(hm_cell{robot_num}.frontiers_q,2) == 1)
+        %         disp("Last Frontier is explored by other robot!")
+        %         return
+        %     else
+        %         for i=1:size(hm_cell{robot_num}.frontiers_q,2)
+        %             if(norm(hm_cell{robot_num}.frontiers_q(i,:)'- q_front_cell{robot_num}) >1e-9)
+        %                  q_front_cell{robot_num} = hm_cell{robot_num}.frontiers_q(i,:);
+        %                  return
+        %             end
+        %         end
+        %     end
+        % end
+        
+
         try
+            robotPosMsg = getTransform(tftree, map_frame_cell{i}, strcat( namespace{i}, '/base_footprint'));
+            robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
             q_front_cell{robot_num} = hm_cell{robot_num}.getNearestFrontier(robot_pos_cell{robot_num}, true);
         catch
             disp("Error finding nearest frontier")
@@ -124,8 +159,10 @@ end
 
 function updateIsMerged(~,msg)
     global isMerged map_frame_cell
-    isMerged = logical(msg.Data);
-    map_frame_cell = 'world';
+    isMerged = true;
+    arr = msg.Data;
+    arr = arr+1;
+    map_frame_cell{arr(1)}= 'world';
     disp('Map merged')
 end
 
