@@ -4,4 +4,4 @@ testing.m
 *.jpg
 *.jpeg
 *.png
-/src/__pycache__/
+**/__pycache__/
