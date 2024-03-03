@@ -310,7 +310,7 @@ classdef HarmonicMap < handle
             % Optinal argument: isFreeCell cell array that is the same 
             % size as boundaries and its elemets are a mx1
             % logical vector that tell you if the boundary is free
-
+            obj.isMapSolved = false;
             if(nargin==2)
                 obj.upscaledBoundaries(boundaries);
             else

@@ -17,12 +17,12 @@ rehash toolboxcache
 rosinit
 
 global hm_cell q_front_cell robot_pos_cell map_frame_cell boundary_msg namespace K_ang K_lin  isMerged
-K_ang = 0.4;
-K_lin = 0.25;
+K_ang = 0.2;
+K_lin = 0.15;
 
 isMerged = false;
 
-N = 2;
+N = 3;
 hm_cell = cell(1,N);
 namespace = cell(1,N);
 robot_pos_cell = cell(1,N);
@@ -141,17 +141,28 @@ function setHMBoundaries(~, ~, robot_num)
         toc
         hm_cell{robot_num}.plotMap()
 
-      
+         
 
         
         if(isempty(hm_cell{robot_num}.frontiers_q))
             disp("Exporation Done!")
             return
         end
-        
+         try
+           q_d = hm_cell{robot_num}.getNearestFrontier(robot_pos_cell{robot_num}, true);
+        catch
+            disp("Error finding nearest frontier")
+            q_d = hm_cell{robot_num}.frontiers_q(1,:)';
+         end
 
+
+        if(~isempty(mergedWith{robot_num}))
+            
+        end
+
+        q_front_cell{robot_num}  = q_d;
         %Set new frontier goal
-        
+
         %todo: intergrate
 
 
@@ -170,12 +181,7 @@ function setHMBoundaries(~, ~, robot_num)
         % end
         
         
-        try
-            q_front_cell{robot_num} = hm_cell{robot_num}.getNearestFrontier(robot_pos_cell{robot_num}, true);
-        catch
-            disp("Error finding nearest frontier")
-            q_front_cell{robot_num} = hm_cell{robot_num}.frontiers_q(1,:)';
-        end       
+            
     end
 end
 
