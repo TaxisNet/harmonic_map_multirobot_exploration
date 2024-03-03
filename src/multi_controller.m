@@ -1,7 +1,14 @@
     rosshutdown
+    
+    try
+    cellfun(@delete, timer_cell)
+    catch
+        disp("error deleting previous timers");
+    end
+
 %
 %for custom ros message
-addpath('../../matlab_msg_gen_ros1/glnxa64/install/m')
+addpath('~/catkin_ws/src/matlab_msg_gen_ros1/glnxa64/install/m')
 
 clear classes
 rehash toolboxcache
@@ -24,7 +31,7 @@ q_front_cell = cell(1,N);
 boundary_info_sub = cell(1,N);
 velocity_pub = cell(1,N);
 boundary_msg = cell(1,N);
-
+timer_cell = cell(1,N);
 
 map_frame_cell = cell(1,N);
 pos_handle = cell(1,N);
@@ -38,6 +45,15 @@ namespace{k} = strcat("tb3_", string(k-1));
 map_frame_cell{k} = strcat(namespace{k}, '/map');
 boundary_info_sub{k} = rossubscriber(strcat(namespace{k},'/boundary_info'),'boundary_compute/boundary_info', {@callback, k}, DataFormat='struct');
 velocity_pub{k} = rospublisher(strcat(namespace{k},'/cmd_vel'),'geometry_msgs/Twist', DataFormat='struct');
+
+
+%set timer
+timer_cell{k} = timer;
+timer_cell{k}.TimerFcn = {@setHMBoundaries, k};
+timer_cell{k}.ExecutionMode = "fixedRate";
+timer_cell{k}.Period = 2.5; %secs
+timer_cell{k}.StartDelay = 2;
+timer_cell{k}.start()
 end
 
 
@@ -62,6 +78,7 @@ while(1)
             %no q given-> gets nearest (in q-space)frontier
              
         %%%%plot pos%%%%%
+        try
         set(0,'CurrentFigure',hm_cell{i}.fig);
         subplot(121)
         hold on
@@ -70,7 +87,9 @@ while(1)
         %quiver(robotPos(1), robotPos(2), desired_vel(1), desired_vel(2), 1)
         hold off
         %%%%
-            
+        catch
+        end
+        
             [linVel, angVel] = velocityController(robotQuat, desired_vel);
             
             if(~isnan(linVel+angVel))
@@ -88,15 +107,17 @@ function callback(~,msg, robot_num)
 global boundary_msg
     if(~msg.CompFailed)
         boundary_msg{robot_num} = msg;
+        %setHMBoundaries([],[], robot_num)
     end
-    OLD_callback(robot_num) 
 end
 
 
-function OLD_callback(robot_num)
+function setHMBoundaries(~, ~, robot_num)
     global hm_cell q_front_cell robot_pos_cell boundary_msg
-
-    if(~boundary_msg{robot_num}.CompFailed)
+ 
+    if(isempty(boundary_msg{robot_num}))
+        disp("No boundary is set for robot"+string(robot_num))
+    else
         [boundaries, isFree, ~] = parseBoundaries(boundary_msg{robot_num});
         % check if order is counter clock wise.
         % Looks like the outter is and the inner aren't
@@ -128,6 +149,9 @@ function OLD_callback(robot_num)
             return
         end
         
+
+        %Set new frontier goal
+        
         %todo: intergrate
 
 
@@ -145,15 +169,13 @@ function OLD_callback(robot_num)
         %     end
         % end
         
-
+        
         try
-            robotPosMsg = getTransform(tftree, map_frame_cell{i}, strcat( namespace{i}, '/base_footprint'));
-            robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
             q_front_cell{robot_num} = hm_cell{robot_num}.getNearestFrontier(robot_pos_cell{robot_num}, true);
         catch
             disp("Error finding nearest frontier")
             q_front_cell{robot_num} = hm_cell{robot_num}.frontiers_q(1,:)';
-        end        
+        end       
     end
 end
 

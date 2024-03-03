@@ -208,7 +208,7 @@ if __name__=='__main__':
     mc0.robot_radius = 0.17
     mc1 = MergingComputation('tb3_1', ['tb3_0'])
     mc1.robot_radius = 0.17
-    rate = rospy.Rate(0.5)
+    rate = rospy.Rate(1)
 
     while(not rospy.is_shutdown()):
         mc0.publish_data()

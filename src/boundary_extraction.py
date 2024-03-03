@@ -51,7 +51,7 @@ class Computation():
         self.lo_min = -5000
 
         #Robot Params (from https://emanual.robotis.com/docs/en/platform/turtlebot3/features/#data-of-turtlebot3-burger)
-        self.robot_radius = 0.105 # in meters
+        self.robot_radius = 0.2 # in meters
         self.robot_radius_in_cells = None
 
         self.boundary_info_pub = rospy.Publisher(self.namespace +'/boundary_info', boundary_info, queue_size = 1)
@@ -252,7 +252,7 @@ class Computation():
         frontiers = np.logical_and(freeBound,obsBound)
         #frontiers = cv2.dilate(np.array(frontiers, dtype=np.uint8),np.ones((2,2)))   
         isFree = np.full(np.shape(xl),False)
-        isFree[frontiers[yl,xl]] = True
+        isFree[freeBound[yl,xl]] = True
         
         # # debug
         # print([outer_outer_bound_indx, outer_bound_indx, in_l])

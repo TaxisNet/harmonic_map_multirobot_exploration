@@ -36,7 +36,7 @@ classdef HarmonicMap < handle
         % innerObstacleSampleModifier
         % this might need tuning
         samplesPerUnit = 30;
-        innerObstacleSampleModifier = 0.5;
+        innerObstacleSampleModifier = 0.75;
         
         
         %to avoid errors

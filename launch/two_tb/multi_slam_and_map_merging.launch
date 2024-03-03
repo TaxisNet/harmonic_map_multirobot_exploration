@@ -4,7 +4,7 @@
   <arg name="second_tb3" value="tb3_1"/>
 
 
-  <include file="$(find harmonic_map_multirobot_exploration)/launch/multi_turtlebot3.launch">
+  <include file="$(find harmonic_map_multirobot_exploration)/launch/two_tb/multi_turtlebot3.launch">
     <arg name="first_tb3"  value="$(arg first_tb3)"/>
     <arg name="second_tb3" value="$(arg second_tb3)"/>
   </include>
@@ -47,7 +47,7 @@
 
 
   
-  <include file="$(find harmonic_map_multirobot_exploration)/launch/multi_map_merge.launch"/>
+  <include file="$(find harmonic_map_multirobot_exploration)/launch/two_tb/multi_map_merge.launch"/>
   <!-- Correct map origin-->
   <node pkg="harmonic_map_multirobot_exploration" type="move_map_origin.py" name="move_map_origin" output="screen"/>
 
