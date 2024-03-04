@@ -22,7 +22,7 @@ K_lin = 0.15;
 
 isMerged = false;
 
-N = 3;
+N = 1;
 hm_cell = cell(1,N);
 namespace = cell(1,N);
 robot_pos_cell = cell(1,N);
@@ -156,9 +156,9 @@ function setHMBoundaries(~, ~, robot_num)
          end
 
 
-        if(~isempty(mergedWith{robot_num}))
-            
-        end
+        % if(~isempty(mergedWith{robot_num}))
+        % 
+        % end
 
         q_front_cell{robot_num}  = q_d;
         %Set new frontier goal
