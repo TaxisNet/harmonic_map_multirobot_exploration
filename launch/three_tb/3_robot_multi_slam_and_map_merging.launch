@@ -65,10 +65,16 @@
   </group>
 
 
+  <node name="my_map_merger" pkg="harmonic_map_multirobot_exploration" type="my_map_merger.py"/>
+  <!-- Add tf transforms -->
+  <node pkg="tf" type="static_transform_publisher" name="world_to_$(arg first_tb3)_tf_broadcaster"  args="0 0 0 0 0 0 /world /$(arg first_tb3)/map 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="world_to_$(arg second_tb3)_tf_broadcaster" args="0 0 0 0 0 0 /world /$(arg second_tb3)/map 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="world_to_$(arg third_tb3)_tf_broadcaster" args="0 0 0 0 0 0 /world /$(arg third_tb3)/map 100"/>
+
   
-  <include file="$(find harmonic_map_multirobot_exploration)/launch/three_tb/3_map_merge.launch"/>
+  <!-- <include file="$(find harmonic_map_multirobot_exploration)/launch/three_tb/3_map_merge.launch"/> -->
   <!-- Correct map origin-->
-  <node pkg="harmonic_map_multirobot_exploration" type="move_map_origin.py" name="move_map_origin" output="screen"/>
+  <!-- <node pkg="harmonic_map_multirobot_exploration" type="move_map_origin.py" name="move_map_origin" output="screen"/> -->
 
   <!--rviz  / Change config file-->
   <group if="$(arg open_rviz)"> 

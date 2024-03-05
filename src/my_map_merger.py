@@ -51,12 +51,16 @@ class MapMerger():
         for robot in self.other_robots:
             if robot in self.maps.keys():
                 is_free = np.logical_and(self.maps[robot]>=0, self.maps[robot]<50)
+                is_free = np.logical_and(merged_map<50, is_free)
                 is_occ =  self.maps[robot]>=50
 
                 merged_map[is_free] = 0
                 merged_map[is_occ] = 100
-            
+        
+
         is_free = np.logical_and(self.maps[self.robot_ns]>=0, self.maps[self.robot_ns]<50)
+        #is_free = np.logical_and(merged_map<50, is_free)    
+        #self perseption is best
         is_occ =  self.maps[self.robot_ns]>=50
 
         merged_map[is_free] = 0

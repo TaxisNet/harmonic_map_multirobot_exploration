@@ -10,19 +10,19 @@
 %for custom ros message
 addpath('~/catkin_ws/src/matlab_msg_gen_ros1/glnxa64/install/m')
 
-clear classes
+%clear classes
 rehash toolboxcache
 
 
 rosinit
 
 global hm_cell q_front_cell robot_pos_cell map_frame_cell boundary_msg namespace K_ang K_lin  isMerged
-K_ang = 0.2;
-K_lin = 0.15;
+K_ang = 0.3;
+K_lin = 0.20;
 
 isMerged = false;
 
-N = 1;
+N = 3;
 hm_cell = cell(1,N);
 namespace = cell(1,N);
 robot_pos_cell = cell(1,N);
@@ -52,7 +52,7 @@ timer_cell{k} = timer;
 timer_cell{k}.TimerFcn = {@setHMBoundaries, k};
 timer_cell{k}.ExecutionMode = "fixedRate";
 timer_cell{k}.Period = 2.5; %secs
-timer_cell{k}.StartDelay = 2;
+timer_cell{k}.StartDelay = 4;
 timer_cell{k}.start()
 end
 
@@ -64,44 +64,61 @@ rate = rosrate(10);
 
 while(1)
     for i=1:N
-        twistMsg = rosmessage(velocity_pub{i});
-        if(~isempty(hm_cell{i}.frontiers_q) && ~isempty(q_front_cell{i}))
-            robotPosMsg = getTransform(tftree, map_frame_cell{i}, strcat( namespace{i}, '/base_footprint'));
-            robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
-            robot_pos_cell{i}=robotPos;
-            robotQuat = robotPosMsg.Transform.Rotation;
-            robotQuat = [robotQuat.W robotQuat.X robotQuat.Y robotQuat.Z];
-            
-            % robotPos=[0;0];
-            % robotQuat= zeros(1,4);
-            desired_vel = hm_cell{i}.getFieldVelocity(robot_pos_cell{i},q_front_cell{i});
-            %no q given-> gets nearest (in q-space)frontier
-             
-        %%%%plot pos%%%%%
-        try
-        set(0,'CurrentFigure',hm_cell{i}.fig);
-        subplot(121)
-        hold on
-        delete(pos_handle{i})
-        pos_handle{i} = plot(robotPos(1), robotPos(2), 'rsquare');
-        %quiver(robotPos(1), robotPos(2), desired_vel(1), desired_vel(2), 1)
-        hold off
-        %%%%
-        catch
+        robotPosMsg = getTransform(tftree, map_frame_cell{i}, strcat( namespace{i}, '/base_footprint'));
+        if(isempty(robotPosMsg))
+            continue
         end
         
-            [linVel, angVel] = velocityController(robotQuat, desired_vel);
-            
-            if(~isnan(linVel+angVel))
-                twistMsg.Linear.X = double(linVel);
-                twistMsg.Angular.Z = double(angVel);
-            end
-        end
-        send(velocity_pub{i},twistMsg);
+        msg = findTwist(i, robotPosMsg);
+        send(velocity_pub{i},msg);
     end
     waitfor(rate);
 end
 
+
+function twistMsg = findTwist(robot_num, robotPosMsg)
+global hm_cell q_front_cell robot_pos_cell 
+    twistMsg = rosmessage('geometry_msgs/Twist', "DataFormat","struct");
+    if(~isempty(hm_cell{robot_num}.frontiers_q) && ~isempty(q_front_cell{robot_num}))
+        
+        robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
+        robot_pos_cell{robot_num}=robotPos;
+        robotQuat = robotPosMsg.Transform.Rotation;
+        robotQuat = [robotQuat.W robotQuat.X robotQuat.Y robotQuat.Z];
+        try
+            [q,J]= hm_cell{robot_num}.compute(robot_pos_cell{robot_num});
+        catch ME
+            disp(ME.message)
+            return 
+        end
+        if (isnan(rcond(J)))
+            return  
+        end
+        dq = (q-q_front_cell{robot_num});
+        dx=-inv(J)* dq;
+        desired_vel = dx/(norm(dx)+0.001);
+    
+    
+        %%%%plot pos%%%%%
+        % try
+        %     set(0,'CurrentFigure',hm_cell{robot_num}.fig);
+        %     subplot(121)
+        %     hold on
+        %     delete(pos_handle{robot_num})
+        %     pos_handle{robot_num} = plot(robotPos(1), robotPos(2), 'rsquare');
+        %     %quiver(robotPos(1), robotPos(2), desired_vel(1), desired_vel(2), 1)
+        %     hold off
+        %     %%%%
+        % catch
+        % end
+        
+        [linVel, angVel] = velocityController(robotQuat, desired_vel, norm(dq));
+        twistMsg.Linear.X = double(linVel);
+        twistMsg.Angular.Z = double(angVel);
+
+    end
+    return
+end
 
 function callback(~,msg, robot_num)
 global boundary_msg
@@ -138,7 +155,7 @@ function setHMBoundaries(~, ~, robot_num)
         %calculate transform
         tic
         hm_cell{robot_num}.setBoundaries(boundaries,isFree);
-        toc
+        %toc;
         hm_cell{robot_num}.plotMap()
 
          
@@ -149,6 +166,7 @@ function setHMBoundaries(~, ~, robot_num)
             return
         end
          try
+             
            q_d = hm_cell{robot_num}.getNearestFrontier(robot_pos_cell{robot_num}, true);
         catch
             disp("Error finding nearest frontier")
@@ -233,7 +251,7 @@ end
 end
 
 
-function [linVel, angVel] = velocityController(quat, desired_vel)
+function [linVel, angVel] = velocityController(quat, desired_vel, q_dist)
     global K_ang K_lin
 
     eul_angles = quat2eul(quat, 'XYZ');
@@ -255,4 +273,11 @@ function [linVel, angVel] = velocityController(quat, desired_vel)
     %turningCoef = max((1-((delta_yaw)/(pi/2)).^4),0);
     turningCoef = abs(delta_yaw)<(pi/3);
     linVel = K_lin* turningCoef*norm(desired_vel);
+
+    if nargin>2
+        damping_dist = 0.05;
+        damping_factor = (1/(2*damping_dist))*q_dist;
+        damping_factor = min(damping_factor,1);
+        linVel = damping_factor*linVel;
+    end
 end

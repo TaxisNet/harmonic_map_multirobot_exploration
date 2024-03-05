@@ -4,14 +4,14 @@ from std_msgs.msg import UInt16MultiArray
  
 class MergingComputation(Computation):
     def __init__(self,ns,robot_list):
+      
+        super(MergingComputation, self).__init__(ns)
         self.other_robots_ns = robot_list
-
         self.merge_ns = '/map_merge'
-        self.merged_map_topic = self.merge_ns+'/new_map'
+        self.merged_map_topic = self.namespace+'/merged_map'
         self.tf_merged_map_frame = 'world'
         self.merged_map_sub = rospy.Subscriber(self.merged_map_topic,OccupancyGrid,self.merged_msg_callback)
         self.is_merged_pub = rospy.Publisher(self.merge_ns+'/is_merged',UInt16MultiArray, queue_size=1)
-        super(MergingComputation, self).__init__(ns)
 
     def merged_msg_callback(self,msg):
         self.merged_map_data_tmp = msg.data

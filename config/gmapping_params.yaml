@@ -10,8 +10,8 @@ lskip: 10
 particles: 120
 sigma: 0.05
 kernelSize: 1
-lstep: 0.05
-astep: 0.05
+lstep: 0.1
+astep: 0.1
 iterations: 5
 lsigma: 0.075
 ogain: 3.0
