@@ -140,7 +140,6 @@ class Computation():
         img_dilate = cv2.dilate(bound, kernel)
         map_data[img_dilate==1]=1
 
-
        
         #convMat = np.array([[0,1,0],[1,-4,1],[0,1,0]]) 
         # merged map might be fuzzy and need a larger kernel for edge detection
@@ -173,12 +172,12 @@ class Computation():
         #close any holes
         bb = cv2.morphologyEx(bb, cv2.MORPH_CLOSE, np.ones((5,5)))
 
-
-        # #debug plots
-        # plt.subplot(221)
+        # debug plots
+        # plt.subplot(121)
         # plt.imshow(map_data)
-        # plt.subplot(222)
+        # plt.subplot(122)
         # plt.imshow(bb)
+        # plt.show()
         
         # plt.subplot(223)
         # plt.imshow(obsBound)
@@ -197,14 +196,19 @@ class Computation():
         #FINALLY FIND THE CONTOURS
         contours, hierarchy  = cv2.findContours(bb,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
         
-
+        outer_outer_bound_indx = None
         #find outer side of outer contour
         for i, hierarchy_vec in enumerate(hierarchy[0]):
             if(hierarchy_vec[3]==-1):
-                #check if robot is inside:                
+                #check if robot is inside:
                 if(cv2.pointPolygonTest(contours[i], self.robot_position, measureDist=False) >= 0):
                     outer_outer_bound_indx = i
                     break
+            
+            # if outer_bound_indx == None:
+            #     plt.imshow(bb)
+            #     plt.show()
+                
 
         #now try to find inner side outer of outer contour
         if(hierarchy[0][outer_outer_bound_indx][2]== -1):
@@ -254,6 +258,23 @@ class Computation():
         isFree = np.full(np.shape(xl),False)
         isFree[freeBound[yl,xl]] = True
         
+
+        # isFreeFiltered = isFree.copy()[0:nl[0]]
+        # count = 0
+
+        # # Iterate through the logical array
+        # for i,value in enumerate(isFreeFiltered):
+        #     if ~value:
+        #         # Increment the true counter
+        #         count += 1
+                
+        #     else:
+        #             if(count<=3):
+                        
+        #                 isFreeFiltered[i-count:i] = True
+        #             count = 0
+
+        # isFree[0:nl[0]] = isFreeFiltered
         # # debug
         # print([outer_outer_bound_indx, outer_bound_indx, in_l])
         # print(hierarchy)
@@ -404,9 +425,9 @@ class Computation():
                 self.boundary_info_msg.comp_failed = failed_comp
                 self.boundary_info_pub.publish(self.boundary_info_msg)
                
-                #print("Boundary Info published")
+                print("{}: Boundary Info published".format(self.namespace))
             else: 
-                print('Computation Failed')
+                print('{}: Computation Failed'.format(self.namespace))
                 self.boundary_info_msg.comp_failed = failed_comp
                 self.boundary_info_msg.map_resolution = self.mapResolution
                 self.boundary_info_msg.map_x0 = self.mapOrigin[0]
@@ -425,6 +446,7 @@ class Computation():
 if __name__=='__main__':
     rospy.init_node('boundary_comp_node', anonymous=True)
     ns = rospy.get_namespace()[:-1]
+    ns='tb3_0'
     computation = Computation(ns)
     computation.robot_radius=(0.25/2)
     rate = rospy.Rate(0.2)

@@ -12,7 +12,7 @@ rehash toolboxcache
 rosinit
 % globals
 global hm K_ang K_lin q_front robotPos figure_file
-figure_file = strcat('/media/taxis/Intenso/Results/figures/hm_figs_run',string(datetime('now',Format='dd-MM_HH_mm')), '/')
+figure_file = strcat('/media/taxis/Intenso/Results/figures/multi_figs',string(datetime('now',Format='dd-MM_HH_mm')), '/')
 mkdir(figure_file)
 
 hm = HarmonicMap();

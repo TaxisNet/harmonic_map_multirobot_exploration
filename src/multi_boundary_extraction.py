@@ -191,7 +191,6 @@ class MergingComputation(Computation):
 
         arr = UInt16MultiArray()
         arr.data = [number_1, number_2]
-        print(arr)
 
         self.is_merged_pub.publish(arr)
 
