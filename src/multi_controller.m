@@ -22,7 +22,7 @@ K_lin = 0.22;
 
 
 
-N = 3;
+N = 1;
 hm_cell = cell(1,N);
 namespace = cell(1,N);
 robot_pos_cell = cell(1,N);
@@ -92,7 +92,7 @@ while(1)
         
         msg = findTwist(i, robotPosMsg);
         send(velocity_pub{i},msg);
-        % disp('running..'+string(i))
+        disp('running..'+string(i))
     end
    
     waitfor(rate);
@@ -101,7 +101,7 @@ end
 
 function twistMsg = findTwist(robot_num, robotPosMsg)
 global hm_cell q_front_cell robot_pos_cell 
-    twistMsg = rosmessage('geometry_msgs/Twist', "DataFormat","struct");
+        twistMsg = rosmessage('geometry_msgs/Twist', "DataFormat","struct");
     if(~isempty(hm_cell{robot_num}.frontiers_q) && ~isempty(q_front_cell{robot_num}))
         
         robotPos = [robotPosMsg.Transform.Translation.X; robotPosMsg.Transform.Translation.Y];
@@ -180,6 +180,7 @@ function setHMBoundaries(~, ~, robot_num)
         end
             catch ME
                 disp(ME.message)
+                hm_cell{robot_num}.frontiers_q = [];
             
         end
         

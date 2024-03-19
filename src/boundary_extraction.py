@@ -448,7 +448,7 @@ if __name__=='__main__':
     ns = rospy.get_namespace()[:-1]
     ns='tb3_0'
     computation = Computation(ns)
-    computation.robot_radius=(0.25/2)
+    computation.robot_radius=(0.3)
     rate = rospy.Rate(0.2)
     
     while not rospy.is_shutdown():

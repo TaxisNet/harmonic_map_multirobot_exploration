@@ -6,7 +6,7 @@ from multi_boundary_extraction import *
 if __name__=='__main__':
 
     rospy.init_node('boundary_comp_node', anonymous=True)
-    robot_radius = 0.35
+    robot_radius = 0.40
     robots = ['tb3_0', 'tb3_1', 'tb3_2']
     mc_list = []
 
