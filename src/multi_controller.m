@@ -22,7 +22,7 @@ K_lin = 0.22;
 
 
 
-N = 1;
+N = 3;
 hm_cell = cell(1,N);
 namespace = cell(1,N);
 robot_pos_cell = cell(1,N);
